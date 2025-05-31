@@ -10,7 +10,7 @@ import kotlinx.serialization.json.Json
 
 @Serializable
 data class ComputedStats(
-    val job: String,
+    val job: Job,
     val hp: Int,
     val vitality: Int,
     val strength: Int,

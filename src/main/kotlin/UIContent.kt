@@ -69,8 +69,11 @@ fun UIContent() {
                     } else if (!csvFileExists(playerConfig)) {
                         playerConfigMessage = "FILE DOES NOT EXIST OR WAS NOT FOUND: $playerConfig"
                     } else {
-                        initializeParty(file = playerConfig, mode = "lowRisk")
+                        val playerList = initializeParty(file = playerConfig, mode = "lowRisk")
                         playerConfigMessage = "Loaded Config: $playerConfig"
+                        for(player in playerList){
+                            player.introduceYourself()
+                        }
                     }
                 }
                 ,
