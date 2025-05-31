@@ -23,3 +23,4 @@ fun initializeParty(mode: String = "lowRisk") : List<Player>{
     val parser = CsvParser(mode)
     return parser.readPlayersFromCsv("config/playerConfig.csv")
 }
+// hi
