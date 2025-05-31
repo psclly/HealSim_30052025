@@ -1,37 +1,45 @@
-import JobMainStats.getMainStatForJob
+import JobMainStats.*
+import Job.*
+import JobTypes.*
+import SpeedTypes.*
+enum class JobMainStats {
+    MND, STR, DEX, INT
+}
 
-object JobMainStats {
-    val jobMainStatMap = mapOf(
-        "WHM" to "MND",
-        "SGE" to "MND",
-        "SCH" to "MND",
-        "AST" to "MND",
-        "PLD" to "STR",
-        "WAR" to "STR",
-        "DRK" to "STR",
-        "GNB" to "STR",
-        "DRG" to "STR",
-        "MNK" to "STR",
-        "NIN" to "DEX",
-        "SAM" to "STR",
-        "RPR" to "STR",
-        "VPR" to "DEX",
-        "BRD" to "DEX",
-        "MCH" to "DEX",
-        "DNC" to "DEX",
-        "BLM" to "INT",
-        "SMN" to "INT",
-        "RDM" to "INT",
-        "BLU" to "INT",
-        "PCT" to "INT",
-    )
+enum class JobTypes{
+    Healer, Tank, DPS
+}
 
-    fun getMainStatForJob(job: String): String? {
-        return jobMainStatMap[job.uppercase()]
-    }
+enum class SpeedTypes{
+    SKS, SPS
+}
+
+enum class Job(val jobMainStats: JobMainStats, val jobTypes: JobTypes, val speedTypes: SpeedTypes){
+    WHM(MND, Healer, SPS),
+    SGE(MND, Healer, SPS),
+    SCH(MND, Healer, SPS),
+    AST(MND, Healer, SPS),
+    PLD(STR, Tank, SKS),
+    WAR(STR, Tank, SKS),
+    DRK(STR, Tank, SKS),
+    GNB(STR, Tank, SKS),
+    DRG(STR, DPS, SKS),
+    MNK(STR, DPS, SKS),
+    NIN(DEX, DPS, SKS),
+    SAM(STR, DPS, SKS),
+    RPR(STR, DPS, SKS),
+    VPR(DEX, DPS, SKS),
+    BRD(DEX, DPS, SKS),
+    MCH(DEX, DPS, SKS),
+    DNC(DEX, DPS, SKS),
+    BLM(INT, DPS, SPS),
+    SMN(INT, DPS, SPS),
+    RDM(INT, DPS, SPS),
+    BLU(INT, DPS, SPS),
+    PCT(INT, DPS, SPS),
 }
 
 //TEST
 fun main(){
-    println(getMainStatForJob("SCH"))
+    println(WHM.jobMainStats)
 }

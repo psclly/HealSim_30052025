@@ -17,5 +17,9 @@ class CsvParser(val mode: String = "lowRisk"){
         }
         return players
     }
+
+    fun readTimelineFromCsv(file: String): String{
+        return "This is supposed to load a timeline"
+    }
 }
 

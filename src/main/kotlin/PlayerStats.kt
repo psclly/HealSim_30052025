@@ -1,5 +1,6 @@
+import Job.*
 class PlayerStats(gearset: String) {
-    var job: String = "Unknown"
+    var job: Job = WHM
     var maxhp: Int = 0
     var vitality: Int = 0
     var strength: Int = 0

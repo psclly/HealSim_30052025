@@ -2,10 +2,6 @@ import kotlin.math.floor
 import HealingConstants.LevelModDiv
 import HealingConstants.LevelModMain
 import HealingConstants.LevelModSub
-import JobMainStats.getMainStatForJob
-import JobSpeedAttributes.getSpeedAttributeForJob
-import JobTypes.getJobTypeForJob
-
 import kotlin.random.Random
 
 object HealingConstants {
@@ -18,7 +14,7 @@ object HealingConstants {
 
 class HealingCalculator(playerStats: PlayerStats, val mode: String = "lowRisk") {
     val stats: PlayerStats = playerStats
-    val job: String = stats.job
+    val characterJob: Job = stats.job
     var healingToReturn: Int = 0
     var h1: Int = 0
     var h2: Int = 0
@@ -29,35 +25,36 @@ class HealingCalculator(playerStats: PlayerStats, val mode: String = "lowRisk") 
     // when job = caster / phys / melee / tank use correct OoO and stats based on job
     fun calculateHealing(potency: Int = 0, name: String = "", buffs: Float = 1.0f, autoCrit: Boolean = false): Int {
         var flatHeal: Int = 0
-        val traitModifier: Float = if (getJobTypeForJob(job) == "Healer") 1.3f else 1f
+        val traitModifier: Float = if (characterJob.jobMainStats == JobMainStats.MND) 1.3f else 1f
 
 
-        val fDET: Float = floor(130.0f * (stats.determination - LevelModMain) / LevelModDiv + 1000f.toInt())
-        val fTNC: Float = if (getJobTypeForJob(job) == "TANK") {
-            floor(100f * (stats.tenacity - LevelModSub) / LevelModDiv + 1000f).toFloat()
+        val fDET = truncate(130.0f * (stats.determination - LevelModMain) / LevelModDiv + 1000f)
+        val fTNC = if (characterJob.jobTypes == JobTypes.Tank) {
+            truncate(100f * (stats.tenacity - LevelModSub) / LevelModDiv + 1000f)
         } else {
-            1000f
+            1000
         }
 
         //Use SPS for casters and SKS for Phys
-        when(getSpeedAttributeForJob(job)){
-            "SKS" -> {val fSPD: Float = floor(130f * (stats.skillspeed - LevelModSub) / LevelModDiv + 1000f.toInt())}
-            "SPS" -> {val fSPD: Float = floor(130f * (stats.spellspeed - LevelModSub) / LevelModDiv + 1000f.toInt())}
+
+        val fSPD = when(characterJob.speedTypes){
+            SpeedTypes.SKS -> truncate(130f * (stats.skillspeed - LevelModSub) / LevelModDiv + 1000f)
+            SpeedTypes.SPS -> truncate(130f * (stats.spellspeed - LevelModSub) / LevelModDiv + 1000f)
         }
 
-        val fCRT: Float = floor(200f * (stats.crit - LevelModSub) / LevelModDiv + 1400f.toInt())
+        val fCRT = truncate(200f * (stats.crit - LevelModSub) / LevelModDiv + 1400f)
 
-        var fHMP: Float = 0f
-        when(getMainStatForJob(job)){
-            "MND" -> {fHMP = floor(207f * (stats.mind - LevelModSub) / 508f.toInt()) + 100f}
-            "STR" -> {fHMP = floor(207f * (stats.strength - LevelModSub) / 508f.toInt()) + 100f}
-            "DEX" -> {fHMP = floor(207f * (stats.dexterity - LevelModSub) / 508f.toInt()) + 100f}
-            "INT" -> {fHMP = floor(207f * (stats.intelligence - LevelModSub) / 508f.toInt()) + 100f}
+
+        val fHMP = when(characterJob.jobMainStats){
+            JobMainStats.MND -> truncate(207f * (stats.mind - LevelModSub) / 508f) + 100
+            JobMainStats.STR -> truncate(207f * (stats.strength - LevelModSub) / 508f) + 100
+            JobMainStats.DEX -> truncate(207f * (stats.dexterity - LevelModSub) / 508f) + 100
+            JobMainStats.INT -> truncate(207f * (stats.intelligence - LevelModSub) / 508f) + 100
         }
 
 
         //Look up jobAttribute
-        val fWD: Float = floor(LevelModMain * (JobAttributes.getAttributeForJob(job)?.toFloat() ?: 0f) / 1000f) + stats.wdPhys
+        val fWD: Float = (LevelModMain * (JobAttributes.getAttributeForJob(characterJob)?.toFloat() ?: 0f) / 1000f) + stats.wdPhys
 
         val pCHR: Float = floor(200f * (stats.crit - LevelModSub) / LevelModDiv + 50f) / 10f
 
@@ -77,33 +74,34 @@ class HealingCalculator(playerStats: PlayerStats, val mode: String = "lowRisk") 
             else -> 1.0f
         }
 
-        h1 = trunc(trunc(trunc(potency * fHMP / 100f) * fDET) / 1000f)
-        h2 = trunc(trunc(trunc(trunc(trunc(h1 * fTNC) / 1000f) * fWD) / 100f) * traitModifier)
+        h1 = truncate(truncate(potency * fHMP / 100f * fDET) / 1000f)
+        h2 = truncate(truncate(truncate(truncate(h1 * fTNC / 1000f) * fWD) / 100f) * traitModifier)
         //Variance and Crit
         //If the mode is lowrisk, apply LOW ROLL and NO CRIT
         //If the mode is random, apply RANDOM ROLL and CRIT
         when (mode) {
-            "lowRisk" -> flatHeal = trunc(h2 * 0.97f)
+            "lowRisk" -> flatHeal = truncate(h2 * 0.97f)
             "random" -> {
                 if (critCheck(pCHR) || autoCrit) {
-                    h3 = trunc(h2 * fCRT / 1000f)
+                    h3 = truncate(h2 * fCRT / 1000f)
                 } else {
                     h3 = h2
                 }
                 val randomMultiplier: Float = 0.97f + Random.nextFloat() * (1.03f - 0.97f)
-                flatHeal = trunc(h3 * randomMultiplier)
+                flatHeal = truncate(h3 * randomMultiplier)
             }
         }
         //Add buffs to flatHeal
-        healingToReturn = trunc(flatHeal * petModifier * buffs)
+        healingToReturn = truncate(flatHeal * petModifier * buffs)
 
 
         return healingToReturn
     }
 }
 
-fun trunc(x: Float) = floor(x.toDouble()).toInt()
+fun truncate(x: Float) = floor(x.toDouble()).toInt()
 
 fun critCheck(critChancePercent: Float): Boolean {
     return Random.nextFloat() < (critChancePercent / 100f)
 }
+

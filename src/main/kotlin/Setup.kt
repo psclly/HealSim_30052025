@@ -16,8 +16,16 @@ fun setup() {
     simulator.executeSimulation()
 }
 
-fun initializeParty(mode: String = "lowRisk") : List<Player>{
+fun initializeParty(mode: String = "lowRisk", file: String = "config/playerConfig.csv") : List<Player>{
     // Gets all party members from sheet and parses all their info into a party list
+    println("loading $file")
     val parser = CsvParser(mode)
-    return parser.readPlayersFromCsv("config/playerConfig.csv")
+    return parser.readPlayersFromCsv(file)
+}
+
+fun initializeTimeline(file: String){
+    // Gets all party members from sheet and parses all their info into a party list
+    println("loading $file")
+    val parser = CsvParser()
+    println(parser.readTimelineFromCsv(file))
 }
