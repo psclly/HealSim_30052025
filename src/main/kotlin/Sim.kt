@@ -1,7 +1,7 @@
 class Simulator {
-    var events = mutableListOf<Event>()
+    var events = mutableListOf<SheetEvent>()
 
-    fun addEvent(event: Event) {
+    fun addEvent(event: SheetEvent) {
         events.add(event)
     }
 

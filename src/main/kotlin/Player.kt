@@ -22,7 +22,7 @@ class Player(
         println("Hi, I'm $name! I play $job and currently use gearset $gearset.")
         for (i in 1..5) {
             val testPotency: Int = 800
-            val healingToPrint: Int = playerHealingCalculator.calculateHealing(testPotency, autoCrit = true)
+            val healingToPrint: Int = playerHealingCalculator.calculateHealing(testPotency)
             println("My flat healing with potency $testPotency right now would give you $healingToPrint hp")
         }
         println("---------------------------------------")

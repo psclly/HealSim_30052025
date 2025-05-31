@@ -29,11 +29,15 @@ class HealingCalculator(playerStats: PlayerStats, val mode: String = "lowRisk") 
     // when job = caster / phys / melee / tank use correct OoO and stats based on job
     fun calculateHealing(potency: Int = 0, name: String = "", buffs: Float = 1.0f, autoCrit: Boolean = false): Int {
         var flatHeal: Int = 0
-        val traitModifier: Float = 1.3f
+        val traitModifier: Float = if (getJobTypeForJob(job) == "Healer") 1.3f else 1f
 
 
         val fDET: Float = floor(130.0f * (stats.determination - LevelModMain) / LevelModDiv + 1000f.toInt())
-        val fTNC: Float = floor(100f * (stats.tenacity - LevelModSub) / LevelModDiv + 1000f.toInt())
+        val fTNC: Float = if (getJobTypeForJob(job) == "TANK") {
+            floor(100f * (stats.tenacity - LevelModSub) / LevelModDiv + 1000f).toFloat()
+        } else {
+            1000f
+        }
 
         //Use SPS for casters and SKS for Phys
         when(getSpeedAttributeForJob(job)){
@@ -59,100 +63,41 @@ class HealingCalculator(playerStats: PlayerStats, val mode: String = "lowRisk") 
 
 
 
-        //TODO: OoO and formulas for Tank / Phys / Caster
+        val petModifier = when (name) {
+            "Stellar Burst" -> 0.98f
+            "Stellar Explosion" -> 0.98f
+            "Liturgy of the Bell" -> 0.96f
+            "Liturgy of the Bell1" -> 0.96f
+            "Liturgy of the Bell2" -> 0.96f
+            "Liturgy of the Bell3" -> 0.96f
+            "Liturgy of the Bell4" -> 0.96f
+            "Liturgy of the Bell5" -> 0.96f
+            "Fey Blessing" -> 0.9f
+            "Embrace" -> 0.9f
+            else -> 1.0f
+        }
 
-        when(getJobTypeForJob(job)){
-
-            //TANK OoO
-            "Tank" -> {
-                h1 = trunc(trunc(trunc(potency * fHMP/100f) * fDET) /1000f)
-                h2 = trunc(trunc(trunc(trunc(h1 * fTNC) / 1000f) * fWD) / 100f)
-                //Variance and Crit
-                when (mode){
-                    "lowRisk" -> flatHeal = trunc(h2 * 0.97f)
-                    "random" -> {
-                        if(critCheck(pCHR) || autoCrit) {
-                            println("crit!!")
-                            h3 = trunc(h2 * fCRT / 1000f)
-                        } else {
-                            println("not crit")
-                            h3 = h2
-                        }
-                        val randomMultiplier: Float = 0.97f + Random.nextFloat() * (1.03f - 0.97f)
-                        flatHeal = trunc(h3 * randomMultiplier)
-                    }
-                    else -> {println("error, mode not found")}
+        h1 = trunc(trunc(trunc(potency * fHMP / 100f) * fDET) / 1000f)
+        h2 = trunc(trunc(trunc(trunc(trunc(h1 * fTNC) / 1000f) * fWD) / 100f) * traitModifier)
+        //Variance and Crit
+        //If the mode is lowrisk, apply LOW ROLL and NO CRIT
+        //If the mode is random, apply RANDOM ROLL and CRIT
+        when (mode) {
+            "lowRisk" -> flatHeal = trunc(h2 * 0.97f)
+            "random" -> {
+                if (critCheck(pCHR) || autoCrit) {
+                    h3 = trunc(h2 * fCRT / 1000f)
+                } else {
+                    h3 = h2
                 }
-                //Add buffs
-                healingToReturn = trunc(flatHeal * buffs)
-            }
-
-            //CASTER OoO
-            "Caster" -> {
-                //Find pet potency modifier >> https://docs.google.com/spreadsheets/d/1Yt7Px7VHuKG1eJR9CRKs3RpvcR5IZKAAA3xjekvv0LY/edit?gid=0#gid=0
-                val petModifier = when (name){
-                    "Stellar Burst" -> 0.98f
-                    "Stellar Explosion" -> 0.98f
-                    "Liturgy of the Bell" -> 0.96f
-                    "Liturgy of the Bell1" -> 0.96f
-                    "Liturgy of the Bell2" -> 0.96f
-                    "Liturgy of the Bell3" -> 0.96f
-                    "Liturgy of the Bell4" -> 0.96f
-                    "Liturgy of the Bell5" -> 0.96f
-                    "Fey Blessing" -> 0.9f
-                    "Embrace" -> 0.9f
-                    else -> 1.0f
-                }
-
-                h1 = trunc(trunc(fHMP * fDET / 100f) / 1000f) * trunc(fWD * potency / 100f)
-                when (mode){
-                    "lowRisk" -> h2 = h1
-                    "random" ->{
-                        if(critCheck(pCHR) || autoCrit) {
-                            //println("crit!!")
-                            h2 = trunc(h1 * fCRT / 1000f)
-                        } else{
-                            //println("not crit")
-                            h2 = h1
-                        }
-                    }
-                    else -> {println("error, mode not found")}
-                }
-
-                h3 = trunc(h2 * traitModifier)
-
-                when (mode) {
-                    "lowRisk" -> flatHeal = trunc(h3 * 0.97f)
-                    "random" -> {
-                        val variance = 0.97f + Random.nextFloat() * (1.03f - 0.97f)
-                        flatHeal = trunc(h3 * variance)
-                    }
-                }
-
-
-                healingToReturn = trunc(flatHeal * petModifier * buffs)
-            }
-
-            "Physical" -> {
-                h1 = trunc(trunc(potency * fHMP * fDET / 100f)/ 1000f)
-                h2 = trunc(h1 * fWD / 100f)
-                when (mode){
-                    "lowRisk" -> flatHeal = trunc(h2 * 0.97f)
-                    "random" -> {
-                        if(critCheck(pCHR) || autoCrit) {
-                            h3 = trunc(h2 * fCRT / 1000f)
-                        } else {
-                            h3 = h2
-                        }
-                        val randomMultiplier: Float = 0.97f + Random.nextFloat() * (1.03f - 0.97f)
-                        flatHeal = trunc(h3 * randomMultiplier)
-                    }
-                    else -> {println("error, mode not found")}
-                }
-                //Add buffs
-                healingToReturn = trunc(flatHeal * buffs)
+                val randomMultiplier: Float = 0.97f + Random.nextFloat() * (1.03f - 0.97f)
+                flatHeal = trunc(h3 * randomMultiplier)
             }
         }
+        //Add buffs to flatHeal
+        healingToReturn = trunc(flatHeal * petModifier * buffs)
+
+
         return healingToReturn
     }
 }

@@ -3,10 +3,10 @@ import JobSpeedAttributes.getSpeedAttributeForJob
 
 object JobTypes {
     val jobTypeMap = mapOf(
-        "WHM" to "Caster",
-        "SGE" to "Caster",
-        "SCH" to "Caster",
-        "AST" to "Caster",
+        "WHM" to "Healer",
+        "SGE" to "Healer",
+        "SCH" to "Healer",
+        "AST" to "Healer",
         "PLD" to "Tank",
         "WAR" to "Tank",
         "DRK" to "Tank",
