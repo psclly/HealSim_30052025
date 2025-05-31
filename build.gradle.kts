@@ -1,8 +1,10 @@
 plugins {
     kotlin("jvm") version "1.9.10"
     kotlin("plugin.serialization") version "1.9.10"
-    application
+    id("org.jetbrains.compose") version "1.5.10"
+
 }
+
 
 repositories {
     mavenCentral()
@@ -19,12 +21,16 @@ dependencies {
 
     //logger
     implementation("org.slf4j:slf4j-simple:2.0.9")
+    implementation(compose.desktop.currentOs)
 }
 
-application {
-    mainClass.set("MainKt")   // change if your main class is named differently
-}
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     kotlinOptions.jvmTarget = "17"
+}
+
+compose.desktop {
+    application {
+        mainClass = "MainKt" // <- make sure this matches your main file
+    }
 }

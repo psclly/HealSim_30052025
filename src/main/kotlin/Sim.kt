@@ -5,6 +5,8 @@ class Simulator {
         events.add(event)
     }
 
+
+
     fun executeSimulation(){
         events.sortBy { it.timeOfExecution }
         for(event in events){
